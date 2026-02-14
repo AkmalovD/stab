@@ -67,19 +67,19 @@ const Hero: React.FC = () => {
 
   return (
     <>
-      <AuthRequiredModal 
-        isOpen={showAuthModal} 
+      <AuthRequiredModal
+        isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         featureName="поиску городов"
       />
-      
+
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-white">
         {/* Background Elements */}
-        <div className="absolute inset-0 bg-[#f8fafc]" />
-        
+        <div className="absolute inset-0 bg-white" />
+
         {/* Animated grid background */}
         <div className="absolute inset-0 bg-grid opacity-50" />
-        
+
         {/* Floating circles */}
         <motion.div
           className="absolute top-20 left-[10%] w-72 h-72 rounded-full bg-[#0d98ba]/5 blur-3xl"
@@ -179,7 +179,7 @@ const Hero: React.FC = () => {
                       <path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z" />
                     </svg>
                   </div>
-                  
+
                   <input
                     placeholder="Search cities, universities, or countries..."
                     className="flex-1 bg-transparent text-[#0f172a] placeholder:text-[#94a3b8] text-base py-3 px-2 focus:outline-none"
@@ -187,7 +187,7 @@ const Hero: React.FC = () => {
                     onChange={handleSearchInputChange}
                     autoComplete="off"
                   />
-                  
+
                   <button
                     type="submit"
                     disabled={!validateSearchQuery(searchQuery) || isSearching}
@@ -315,15 +315,15 @@ const Hero: React.FC = () => {
                   <div className="flex items-center gap-2 mb-2">
                     <div className="w-8 h-8 rounded-lg bg-[#0d98ba] flex items-center justify-center">
                       <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
-                        <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                        <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                        <path d="M6 12v5c3 3 9 3 12 0v-5" />
                       </svg>
                     </div>
                     <span className="text-[#0f172a] font-medium text-sm">Scholarship</span>
                   </div>
                   <div className="text-lg font-bold text-[#0d98ba]">85% Match</div>
                   <div className="w-full bg-[#e2e8f0] rounded-full h-2 mt-2">
-                    <motion.div 
+                    <motion.div
                       className="bg-[#0d98ba] h-2 rounded-full"
                       initial={{ width: 0 }}
                       animate={{ width: "85%" }}

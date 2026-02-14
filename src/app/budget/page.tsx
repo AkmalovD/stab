@@ -37,9 +37,9 @@ export default function Budget() {
   const [newExpenseAmount, setNewExpenseAmount] = useState('');
   const nameInputRef = useRef<HTMLInputElement>(null);
 
-  const totalExpenses = budget.tuitionFees + budget.rent + budget.food + budget.transport + budget.leisure + 
+  const totalExpenses = budget.tuitionFees + budget.rent + budget.food + budget.transport + budget.leisure +
     budget.customExpenses.reduce((sum, exp) => sum + exp.amount, 0);
-  
+
   const monthlyBalance = budget.monthlyIncome - totalExpenses;
   const isPositive = monthlyBalance >= 0;
 
@@ -124,7 +124,7 @@ export default function Budget() {
   return (
     <>
       <Header />
-      <main className="flex-1 px-4 md:px-10 lg:px-40 py-10 mt-16 min-h-screen bg-[#f8fafc]">
+      <main className="flex-1 px-4 md:px-10 lg:px-40 py-10 mt-16 min-h-screen bg-white">
         <div className="layout-content-container mx-auto flex max-w-7xl flex-col gap-8">
           {/* Header Section */}
           <div className="flex flex-wrap justify-between gap-4 items-center">
@@ -388,11 +388,10 @@ export default function Budget() {
 
                 {/* Balance Display */}
                 <div
-                  className={`flex flex-col gap-1 p-4 rounded-xl border-2 mb-6 ${
-                    isPositive
+                  className={`flex flex-col gap-1 p-4 rounded-xl border-2 mb-6 ${isPositive
                       ? 'bg-[#0d98ba]/5 border-[#0d98ba]'
                       : 'bg-gray-50 border-gray-300'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center justify-between">
                     <p className={`text-sm font-medium ${isPositive ? 'text-[#0d98ba]' : 'text-gray-700'}`}>
@@ -555,15 +554,15 @@ export default function Budget() {
 
       {/* Custom Expense Modal */}
       {isModalOpen && (
-        <div 
+        <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
           onClick={closeModal}
         >
           {/* Backdrop */}
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-in" />
-          
+
           {/* Modal */}
-          <div 
+          <div
             className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 animate-scale-in"
             onClick={(e) => e.stopPropagation()}
           >
