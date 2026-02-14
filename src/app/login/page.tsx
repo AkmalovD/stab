@@ -13,34 +13,34 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
-  const [errors, setErrors] = useState<{email?: string; password?: string;}>({})
+  const [errors, setErrors] = useState<{ email?: string; password?: string; }>({})
 
   const [isLoading, setIsLoading] = useState(false);
 
   const { login, user } = useAuth();
   const router = useRouter();
 
-  const validateForm =(): boolean => {
+  const validateForm = (): boolean => {
     const result = loginSchema.safeParse({
-        email,
-        password,
-        rememberMe
+      email,
+      password,
+      rememberMe
     })
 
     if (result.success) {
-        setErrors({})
-        return true
+      setErrors({})
+      return true
     }
 
     const fieldErrors = result.error.flatten().fieldErrors
 
     setErrors({
-    email: fieldErrors.email?.[0],
-    password: fieldErrors.password?.[0],
+      email: fieldErrors.email?.[0],
+      password: fieldErrors.password?.[0],
     });
-  
+
     return false;
-  } 
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,36 +48,34 @@ export default function Login() {
     // Валидация формы с Zod
     if (!validateForm()) {
       return; // Останавливаем отправку, если есть ошибки
-    } else {
-      toast.success('Вход выполнен успешно!')
-      router.push('/');
     }
-    
+
     setIsLoading(true);
-    
+
     const result = await login(email, password, rememberMe);
 
     setIsLoading(false);
 
     if (result.error) {
-    // Показываем ошибки от Firebase под соответствующим полем
-    if (result.error.includes('email') || result.error.includes('найден')) {
-      setErrors({ email: result.error });
-    } else if (result.error.includes('пароль')) {
-      setErrors({ password: result.error });
+      // Показываем ошибки от Supabase под соответствующим полем
+      if (result.error.includes('email') || result.error.includes('найден')) {
+        setErrors({ email: result.error });
+      } else if (result.error.includes('пароль')) {
+        setErrors({ password: result.error });
+      } else {
+        // Общая ошибка - показываем под паролем
+        setErrors({ password: result.error });
+      }
     } else {
-      // Общая ошибка - показываем под паролем
-      setErrors({ password: result.error });
+      // Успешный вход - редирект на главную
+      toast.success('Вход выполнен успешно!');
+      router.push('/');
     }
-  } else {
-    // Успешный вход - редирект на главную
-    router.push('/');
-  }
   };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value)
-    if(errors.email) {
+    if (errors.email) {
       setErrors({ ...errors, email: undefined })
     }
   }
@@ -85,7 +83,7 @@ export default function Login() {
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value)
     if (errors.password) {
-      setErrors({ ...errors, password: undefined})
+      setErrors({ ...errors, password: undefined })
     }
   }
 
@@ -114,11 +112,10 @@ export default function Login() {
                   id="email"
                   value={email}
                   onChange={handleEmailChange}
-                  className={`w-full px-4 py-2 border rounded-lg transition-colors ${
-                    errors.email 
-                      ? 'border-red-500 focus:ring-2 focus:ring-red-500 focus:border-red-500' 
+                  className={`w-full px-4 py-2 border rounded-lg transition-colors ${errors.email
+                      ? 'border-red-500 focus:ring-2 focus:ring-red-500 focus:border-red-500'
                       : 'border-gray-300 focus:ring-2 focus:ring-[#0d98ba] focus:border-[#0d98ba]'
-                  }`}
+                    }`}
                   placeholder="you@example.com"
                   disabled={isLoading}
                 />
@@ -142,11 +139,10 @@ export default function Login() {
                   id="password"
                   value={password}
                   onChange={handlePasswordChange}
-                  className={`w-full px-4 py-2 border rounded-lg transition-colors ${
-                    errors.password 
-                    ? 'border-red-500 focus:ring-2 focus:ring-red-500 focus:border-red-500' 
-                    : 'border-gray-300 focus:ring-2 focus:ring-[#0d98ba] focus:border-[#0d98ba]'
-                  }`}
+                  className={`w-full px-4 py-2 border rounded-lg transition-colors ${errors.password
+                      ? 'border-red-500 focus:ring-2 focus:ring-red-500 focus:border-red-500'
+                      : 'border-gray-300 focus:ring-2 focus:ring-[#0d98ba] focus:border-[#0d98ba]'
+                    }`}
                   placeholder="••••••••"
                   disabled={isLoading}
                 />
@@ -231,7 +227,7 @@ export default function Login() {
                 className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-[#f8fafc] transition-colors"
               >
                 <svg className="w-5 h-5 mr-2" fill="#1877F2" viewBox="0 0 24 24">
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                 </svg>
                 <span className="text-sm font-medium text-[#0d171b]">Facebook</span>
               </button>

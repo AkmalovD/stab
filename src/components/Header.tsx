@@ -26,7 +26,7 @@ const Header: React.FC = () => {
     const baseClasses = "text-sm font-medium leading-normal transition-all duration-300 relative";
     const activeClasses = "text-[#0d98ba]";
     const inactiveClasses = "text-[#64748b] hover:text-[#0f172a]";
-    
+
     return `${baseClasses} ${isActiveRoute(path) ? activeClasses : inactiveClasses}`;
   };
 
@@ -38,8 +38,8 @@ const Header: React.FC = () => {
     { href: '/community', label: 'Community' },
   ];
 
-  if (!user) {
-    return null;  
+  if (loading || !user) {
+    return null;
   }
 
   return (
@@ -48,42 +48,41 @@ const Header: React.FC = () => {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          isScrolled 
-            ? 'bg-white/90 backdrop-blur-xl border-b border-[#e2e8f0] shadow-sm' 
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled
+            ? 'bg-white/90 backdrop-blur-xl border-b border-[#e2e8f0] shadow-sm'
             : 'bg-transparent'
-        }`}
+          }`}
       >
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           <div className="flex items-center justify-between h-16 md:h-20">
             {/* Logo */}
-            <motion.div 
+            <motion.div
               className="flex items-center gap-2"
               whileHover={{ scale: 1.02 }}
             >
               <div className="w-10 h-10 relative">
-                <Image 
-                  src="/logo.svg" 
-                  alt="STAB Logo" 
-                  width={40} 
+                <Image
+                  src="/logo.svg"
+                  alt="STAB Logo"
+                  width={40}
                   height={40}
                   className="object-contain"
                 />
               </div>
-              <Link 
-                href="/" 
+              <Link
+                href="/"
                 className="text-[#0f172a] text-xl font-bold tracking-tight hover:text-[#0d98ba] transition-colors duration-300"
               >
                 STAB
               </Link>
             </motion.div>
-            
+
             {/* Desktop Navigation */}
             <nav className="hidden lg:flex items-center gap-8">
               {navLinks.map((link) => (
-                <Link 
+                <Link
                   key={link.href}
-                  href={link.href} 
+                  href={link.href}
                   className={getLinkClassName(link.href)}
                 >
                   {link.label}
@@ -97,7 +96,7 @@ const Header: React.FC = () => {
                 </Link>
               ))}
             </nav>
-            
+
             {/* Right Side Actions */}
             <div className="flex items-center gap-4">
               {/* Plan Journey CTA */}
@@ -105,7 +104,7 @@ const Header: React.FC = () => {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <Link 
+                <Link
                   href="/plan-journey"
                   className="hidden md:flex items-center gap-2 px-5 py-2.5 bg-[#0d98ba] text-white text-sm font-semibold rounded-xl hover:bg-[#0b8299] hover:shadow-lg transition-all duration-300"
                 >
@@ -119,15 +118,15 @@ const Header: React.FC = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <Link 
-                    href="/profile" 
+                  <Link
+                    href="/profile"
                     className="flex items-center justify-center w-10 h-10 rounded-full bg-[#0d98ba] text-white font-bold text-sm ring-2 ring-[#0d98ba]/20 hover:ring-[#0d98ba]/50 transition-all duration-300 overflow-hidden"
                     title={user.user_metadata?.name || user.email || 'Profile'}
                   >
                     {user.user_metadata?.avatar_url ? (
-                      <img 
-                        src={user.user_metadata.avatar_url} 
-                        alt="User Avatar" 
+                      <img
+                        src={user.user_metadata.avatar_url}
+                        alt="User Avatar"
                         className="w-full h-full object-cover"
                       />
                     ) : (
@@ -140,8 +139,8 @@ const Header: React.FC = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  <Link 
-                    href="/login" 
+                  <Link
+                    href="/login"
                     className="px-5 py-2.5 bg-white text-[#0f172a] text-sm font-semibold rounded-xl border border-[#e2e8f0] hover:border-[#0d98ba] hover:text-[#0d98ba] transition-all duration-300"
                   >
                     Login
@@ -195,27 +194,26 @@ const Header: React.FC = () => {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.3, delay: index * 0.05 }}
                   >
-                    <Link 
+                    <Link
                       href={link.href}
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className={`block px-4 py-3 rounded-xl transition-all duration-300 ${
-                        isActiveRoute(link.href)
+                      className={`block px-4 py-3 rounded-xl transition-all duration-300 ${isActiveRoute(link.href)
                           ? 'bg-[#0d98ba]/10 text-[#0d98ba]'
                           : 'text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#0f172a]'
-                      }`}
+                        }`}
                     >
                       {link.label}
                     </Link>
                   </motion.div>
                 ))}
-                
+
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.3, delay: navLinks.length * 0.05 }}
                   className="mt-4 pt-4 border-t border-[#e2e8f0]"
                 >
-                  <Link 
+                  <Link
                     href="/plan-journey"
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="block w-full px-4 py-3 bg-[#0d98ba] text-white text-center font-semibold rounded-xl"
