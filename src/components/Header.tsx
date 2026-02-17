@@ -138,14 +138,14 @@ const Header: React.FC = () => {
           <div className={`navbar-content ${isScrolled ? 'scrolled' : 'not-scrolled'}`}>
             {/* Logo */}
             <div className="flex items-center gap-2">
-              <div className="logo-image">
+              {/* <div className="logo-image">
                 <Image
                   src="/logo.svg"
                   alt="STAB Logo"
                   width={32}
                   height={32}
                 />
-              </div>
+              </div> */}
               <Link href="/" className="logo-text font-semibold text-[#0f172a] hover:text-[#0d98ba] transition-colors duration-300">
                 STAB
               </Link>
