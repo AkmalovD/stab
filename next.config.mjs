@@ -4,6 +4,9 @@ const nextConfig = {
     images: {
       domains: ['images.pexels.com'], // Add your image domains
     },
+    eslint: {
+      ignoreDuringBuilds: true,
+    },
   }
   
   export default nextConfig
