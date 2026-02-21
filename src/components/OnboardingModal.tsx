@@ -1,3 +1,4 @@
+import { useAuth } from '@/auth/AuthContext';
 import { journeyProfileApi } from '@/services/profileApi';
 import { JourneyProfile } from '@/types';
 import React, { useState } from 'react';
@@ -7,12 +8,14 @@ interface OnboardingModalProps {
   isOpen: boolean;
   onComplete: (profile: JourneyProfile) => void;
   onCancel: () => void;
+  initialName?: string;
 }
 
-const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComplete, onCancel }) => {
+const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComplete, onCancel, initialName  }) => {
   const [step, setStep] = useState(1);
+  const { user } = useAuth();
   const [profile, setProfile] = useState<Partial<JourneyProfile>>({
-    name: '',
+    name: initialName || '',
     targetCountry: '',
     studyLevel: 'Masters',
     startDate: new Date(),
@@ -22,21 +25,17 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComplete, o
   if (!isOpen) return null;
 
   const handleComplete = async () => {
-    if(!profile.name || !profile.targetCountry || !profile.startDate) {
+    if (!profile.name || !profile.targetCountry || !profile.startDate) {
       toast('Please fill in all fields');
       return;
     }
 
     try {
-      const savedProfile = await journeyProfileApi.create({
+      await journeyProfileApi.create({
         full_name: profile.name || '',
         destination_country: profile.targetCountry || '',
         intended_start_date: profile.startDate?.toISOString().split('T')[0] || '',
       });
-
-      localStorage.setItem('journeyProfileId', savedProfile.id.toString());
-      localStorage.setItem('journeyProfile', JSON.stringify(profile));
-
       onComplete(profile as JourneyProfile);
     } catch (error) {
       console.error('Error saving profile:', error);
@@ -148,11 +147,10 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComplete, o
                     <button
                       key={level}
                       onClick={() => setProfile({ ...profile, studyLevel: level })}
-                      className={`p-4 rounded-lg border-2 transition-all ${
-                        profile.studyLevel === level
+                      className={`p-4 rounded-lg border-2 transition-all ${profile.studyLevel === level
                           ? 'border-[#0d98ba] bg-[#0d98ba]/10 text-[#0d98ba]'
                           : 'border-gray-300 hover:border-[#0d98ba]/50'
-                      }`}
+                        }`}
                     >
                       <div className="font-semibold">{level}</div>
                     </button>

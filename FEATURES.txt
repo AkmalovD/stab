@@ -21,7 +21,7 @@ FRONT-END:
 - completely remake ui in city comparison ✅
 - devide types in index.ts ✅
 - in featured destinations make dialog module with template to study abroad
-- refactor strucure of the project
+- refactor strucure of the project ✅
 - add option in modal while starting journey, suggest to use user's name immidiately
 - fix testimonials bug
 - remake landing page, make more attractive ✅

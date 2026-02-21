@@ -305,7 +305,12 @@ export default function PlanJourney() {
       <Footer />
 
       {/* Onboarding Modal */}
-      <OnboardingModal isOpen={showOnboarding} onComplete={handleOnboardingComplete} onCancel={handleOnboardingCancel} />
+      <OnboardingModal 
+        isOpen={showOnboarding} 
+        onComplete={handleOnboardingComplete} 
+        onCancel={handleOnboardingCancel} 
+        initialName={profile?.name || ''}
+      />
     </>
   );
 }
