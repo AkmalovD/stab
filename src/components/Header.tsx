@@ -25,6 +25,7 @@ const Header: React.FC = () => {
 
   const navLinks = [
     { href: '/', label: 'Home' },
+    { href: '/destinations', label: 'Destinations' },
     { href: '/compare', label: 'Compare Cities' },
     { href: '/budget', label: 'Budget Planner' },
     { href: '/scholarships', label: 'Scholarships' },
@@ -126,7 +127,7 @@ const Header: React.FC = () => {
           gap: 24px;
         }
         .nav-links.not-scrolled {
-          gap: 20px;
+          gap: 50px;
         }
       `}</style>
 
