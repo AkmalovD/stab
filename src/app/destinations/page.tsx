@@ -1,32 +1,37 @@
-import Footer from '@/components/Footer';
-import Header from '@/components/Header';
+"use client"
+
+// import Footer from '@/components/Footer';
+// import Header from '@/components/Header';
 import {
-  GraduationCap,
-  Search,
-  LayoutDashboard,
-  Banknote,
-  Trophy,
-  ClipboardList,
-  Home,
-  Clock,
-  MapPin,
-  Building2,
-  Utensils,
-  Bus,
   ArrowRight,
-  Calendar,
-  Wallet,
-  ClipboardCheck,
   BedDouble,
-  Landmark,
+  Briefcase,
+  Building2,
+  ClipboardCheck,
   HeartPulse,
-  Smartphone,
-  Briefcase
+  Home,
+  Landmark,
+  MapPin,
+  Smartphone
 } from 'lucide-react';
 import Image from 'next/image';
-import Link from 'next/link';
+// import Link from 'next/link';
+
+
+
+import Footer from "@/components/Footer";
+import Header from "@/components/Header";
+import UniversityCard from "@/components/UniversityCard";
+import { londonData } from "@/constants/londonData";
+import Link from "next/link";
+import { useState } from "react";
 
 export default function Destinations() {
+  const [period, setPeriod] = useState<'monthly' | 'annual'>('monthly')
+  const [scholarshipType, setScholarshipType] = useState('All')
+  const filteredScholarships = londonData.scholarships.filter(s =>
+    scholarshipType === 'All' ? true : s.type === scholarshipType
+  )
   return (
     <div className="min-h-screen">
       <Header />
@@ -70,50 +75,59 @@ export default function Destinations() {
             {/* Cost of Living */}
             <section id="cost">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Cost of Living</h2>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Стоимость жизни</h2>
                 <div className="flex bg-gray-100 dark:bg-surface-dark p-1 rounded-lg">
-                  <button className="px-3 py-1 bg-white dark:bg-gray-700 rounded-md shadow-sm text-sm font-medium text-gray-800 dark:text-white">Monthly</button>
-                  <button className="px-3 py-1 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white transition-colors">Annual</button>
+                  <button
+                    className={`px-3 py-1 rounded-md shadow-sm text-sm font-medium ${period === 'monthly' ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white transition-colors'}`}
+                    onClick={() => setPeriod('monthly')}
+                  >
+                    В месяц
+                  </button>
+                  <button
+                    className={`px-3 py-1 rounded-md shadow-sm text-sm font-medium ${period === 'annual' ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white transition-colors'}`}
+                    onClick={() => setPeriod('annual')}
+                  >
+                    В год
+                  </button>
                 </div>
               </div>
               <div className="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-border-light dark:border-border-dark p-6 space-y-6">
                 <div>
                   <div className="flex justify-between mb-2">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                      <Building2 className="text-primary w-5 h-5" /> Rent (Shared Flat)
+                      {/* <Building2 className="text-primary w-5 h-5" /> */} Аренда (комната)
                     </span>
-                    <span className="text-sm font-bold text-gray-900 dark:text-white">£850 <span className="text-gray-400 text-xs font-normal">($1,080 USD)</span></span>
-                  </div>
-                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-                    <div className="bg-primary h-2.5 rounded-full" style={{ width: '75%' }}></div>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1 dark:text-gray-500">High compared to UK average</p>
-                </div>
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                      <Utensils className="text-primary w-5 h-5" /> Food &amp; Groceries
+                    <span className="text-sm font-bold text-gray-900 dark:text-white">
+                      £{period === 'monthly' ? londonData.costOfLiving.rent : londonData.costOfLiving.rent * 12}
                     </span>
-                    <span className="text-sm font-bold text-gray-900 dark:text-white">£350 <span className="text-gray-400 text-xs font-normal">($445 USD)</span></span>
-                  </div>
-                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-                    <div className="bg-primary h-2.5 rounded-full" style={{ width: '45%' }}></div>
                   </div>
                 </div>
                 <div>
                   <div className="flex justify-between mb-2">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                      <Bus className="text-primary w-5 h-5" /> Transport (Student Card)
+                      {/* <Utensils className="text-primary w-5 h-5" /> */} Продукты
                     </span>
-                    <span className="text-sm font-bold text-gray-900 dark:text-white">£100 <span className="text-gray-400 text-xs font-normal">($127 USD)</span></span>
+                    <span className="text-sm font-bold text-gray-900 dark:text-white">
+                      £{period === 'monthly' ? londonData.costOfLiving.food : londonData.costOfLiving.food * 12}
+                    </span>
                   </div>
-                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-                    <div className="bg-primary h-2.5 rounded-full" style={{ width: '30%' }}></div>
+                </div>
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                      {/* <Bus className="text-primary w-5 h-5" /> */} Транспорт (студ. карта)
+                    </span>
+                    <span className="text-sm font-bold text-gray-900 dark:text-white">
+                      £{period === 'monthly' ? londonData.costOfLiving.transport : londonData.costOfLiving.transport * 12}
+                    </span>
                   </div>
                 </div>
                 <div className="pt-4 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center">
-                  <div className="text-sm text-gray-500 dark:text-gray-400">Total estimated monthly cost</div>
-                  <div className="text-xl font-bold text-primary">£1,300 - £1,600</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">Итого</div>
+                  <div className="text-xl font-bold text-primary">
+                    £{period === 'monthly' ? londonData.costOfLiving.total[0] : londonData.costOfLiving.total[0] * 12}
+                    - £{period === 'monthly' ? londonData.costOfLiving.total[1] : londonData.costOfLiving.total[1] * 12}
+                  </div>
                 </div>
               </div>
             </section>
@@ -177,6 +191,11 @@ export default function Destinations() {
                   </div>
                 </div>
               </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {londonData.universities.map(u => (
+                  <UniversityCard key={u.name} university={u} />
+                ))}
+              </div>
               <div className="mt-4 text-center">
                 <Link href="#" className="text-primary hover:text-primary-dark text-sm font-medium inline-flex items-center">
                   View all 40+ universities in London <ArrowRight className="w-4 h-4 ml-1" />
@@ -186,42 +205,31 @@ export default function Destinations() {
 
             {/* Scholarships */}
             <section id="scholarships">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Available Scholarships</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Доступные стипендии</h2>
               <div className="flex flex-wrap gap-2 mb-4">
-                <span className="px-3 py-1 bg-primary text-white rounded-full text-xs cursor-pointer hover:bg-primary-dark transition">All</span>
-                <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-full text-xs cursor-pointer hover:border-primary transition">Merit-based</span>
-                <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-full text-xs cursor-pointer hover:border-primary transition">Government</span>
-                <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-full text-xs cursor-pointer hover:border-primary transition">University Specific</span>
+                {['All', 'Government', 'Merit-based', 'University Specific'].map(type => (
+                  <span
+                    key={type}
+                    className={`px-3 py-1 rounded-full text-xs cursor-pointer transition border ${scholarshipType === type ? 'bg-primary text-white border-primary' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-primary'}`}
+                    onClick={() => setScholarshipType(type)}
+                  >
+                    {type === 'All' ? 'Все' : type}
+                  </span>
+                ))}
               </div>
               <div className="space-y-4">
-                <div className="bg-surface-light dark:bg-surface-dark p-5 rounded-xl border border-border-light dark:border-border-dark flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 text-[10px] font-bold px-2 py-0.5 rounded uppercase">Full Ride</span>
-                      <h4 className="font-bold text-gray-900 dark:text-white">Chevening Scholarship</h4>
+                {filteredScholarships.map(s => (
+                  <div key={s.name} className="bg-surface-light dark:bg-surface-dark p-5 rounded-xl border border-border-light dark:border-border-dark flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-bold text-primary">{s.name}</span>
+                        <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded">{s.type}</span>
+                      </div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">{s.description}</p>
                     </div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Funded by the UK Foreign, Commonwealth and Development Office.</p>
-                    <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
-                      <span className="flex items-center gap-1"><Calendar className="w-4 h-4 text-gray-400" /> Deadline: Nov 2024</span>
-                      <span className="flex items-center gap-1"><Wallet className="w-4 h-4 text-gray-400" /> Covers: Tuition + Stipend</span>
-                    </div>
+                    <button className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-dark whitespace-nowrap">{s.button}</button>
                   </div>
-                  <button className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-dark whitespace-nowrap">Apply Now</button>
-                </div>
-                <div className="bg-surface-light dark:bg-surface-dark p-5 rounded-xl border border-border-light dark:border-border-dark flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 text-[10px] font-bold px-2 py-0.5 rounded uppercase">Partial</span>
-                      <h4 className="font-bold text-gray-900 dark:text-white">GREAT Scholarships</h4>
-                    </div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Scholarships for students from 14 countries to study in UK universities.</p>
-                    <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
-                      <span className="flex items-center gap-1"><Calendar className="w-4 h-4 text-gray-400" /> Deadline: Varies</span>
-                      <span className="flex items-center gap-1"><Wallet className="w-4 h-4 text-gray-400" /> Covers: £10,000</span>
-                    </div>
-                  </div>
-                  <button className="bg-surface-light dark:bg-surface-dark border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg text-sm font-medium hover:border-primary hover:text-primary transition-colors whitespace-nowrap">Details</button>
-                </div>
+                ))}
               </div>
             </section>
 
