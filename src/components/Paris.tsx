@@ -1,7 +1,6 @@
-"use client"
+'use client'
 
-// import Footer from '@/components/Footer';
-// import Header from '@/components/Header';
+import { parisData } from "@/data/parisData"
 import {
   ArrowRight,
   BedDouble,
@@ -13,25 +12,21 @@ import {
   Landmark,
   MapPin,
   Smartphone
-} from 'lucide-react';
-import Image from 'next/image';
-// import Link from 'next/link';
+} from 'lucide-react'
+import Image from 'next/image'
+import Link from "next/link"
+import { useState } from "react"
+import Footer from "./Footer"
+import Header from "./Header"
+import UniversityCard from "./UniversityCard"
 
-
-
-import Footer from "@/components/Footer";
-import Header from "@/components/Header";
-import UniversityCard from "@/components/UniversityCard";
-import { londonData } from "@/data/londonData";
-import Link from "next/link";
-import { useState } from "react";
-
-export default function Destinations() {
+export default function Paris() {
   const [period, setPeriod] = useState<'monthly' | 'annual'>('monthly')
   const [scholarshipType, setScholarshipType] = useState('All')
-  const filteredScholarships = londonData.scholarships.filter(s =>
+  const filteredScholarships = parisData.scholarships.filter(s =>
     scholarshipType === 'All' ? true : s.type === scholarshipType
   )
+
   return (
     <div className="min-h-screen">
       <Header />
@@ -42,7 +37,7 @@ export default function Destinations() {
               <div className="absolute inset-0 bg-black/40 z-10 transition-opacity group-hover:bg-black/30"></div>
               <div className="relative w-full h-80">
                 <Image
-                  src="/london.webp"
+                  src="/tokyo.webp"
                   alt="Aerial view of London skyline at sunset including the Thames"
                   fill
                   className="object-cover object-center transform transition-transform duration-700 group-hover:scale-105"
@@ -98,7 +93,7 @@ export default function Destinations() {
                       {/* <Building2 className="text-primary w-5 h-5" /> */} Аренда (комната)
                     </span>
                     <span className="text-sm font-bold text-gray-900 dark:text-white">
-                      £{period === 'monthly' ? londonData.costOfLiving.rent : londonData.costOfLiving.rent * 12}
+                      £{period === 'monthly' ? parisData.costOfLiving.rent : parisData.costOfLiving.rent * 12}
                     </span>
                   </div>
                 </div>
@@ -108,7 +103,7 @@ export default function Destinations() {
                       {/* <Utensils className="text-primary w-5 h-5" /> */} Продукты
                     </span>
                     <span className="text-sm font-bold text-gray-900 dark:text-white">
-                      £{period === 'monthly' ? londonData.costOfLiving.food : londonData.costOfLiving.food * 12}
+                      £{period === 'monthly' ? parisData.costOfLiving.food : parisData.costOfLiving.food * 12}
                     </span>
                   </div>
                 </div>
@@ -118,15 +113,15 @@ export default function Destinations() {
                       {/* <Bus className="text-primary w-5 h-5" /> */} Транспорт (студ. карта)
                     </span>
                     <span className="text-sm font-bold text-gray-900 dark:text-white">
-                      £{period === 'monthly' ? londonData.costOfLiving.transport : londonData.costOfLiving.transport * 12}
+                      £{period === 'monthly' ? parisData.costOfLiving.transport : parisData.costOfLiving.transport * 12}
                     </span>
                   </div>
                 </div>
                 <div className="pt-4 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center">
                   <div className="text-sm text-gray-500 dark:text-gray-400">Итого</div>
                   <div className="text-xl font-bold text-primary">
-                    £{period === 'monthly' ? londonData.costOfLiving.total[0] : londonData.costOfLiving.total[0] * 12}
-                    - £{period === 'monthly' ? londonData.costOfLiving.total[1] : londonData.costOfLiving.total[1] * 12}
+                    £{period === 'monthly' ? parisData.costOfLiving.total[0] : parisData.costOfLiving.total[0] * 12}
+                    - £{period === 'monthly' ? parisData.costOfLiving.total[1] : parisData.costOfLiving.total[1] * 12}
                   </div>
                 </div>
               </div>
@@ -192,7 +187,7 @@ export default function Destinations() {
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {londonData.universities.map(u => (
+                {parisData.universities.map(u => (
                   <UniversityCard key={u.name} university={u} />
                 ))}
               </div>
@@ -399,5 +394,5 @@ export default function Destinations() {
       </main>
       <Footer />
     </div>
-  );
+  )
 }

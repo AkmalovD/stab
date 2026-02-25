@@ -22,7 +22,7 @@ import Image from 'next/image';
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import UniversityCard from "@/components/UniversityCard";
-import { londonData } from "@/constants/londonData";
+import { londonData } from "@/data/londonData";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -32,8 +32,8 @@ export default function London() {
   const filteredScholarships = londonData.scholarships.filter(s =>
     scholarshipType === 'All' ? true : s.type === scholarshipType
   )
-  
-  return ( 
+
+  return (
     <div className="min-h-screen">
       <Header />
       <main className="pt-[80px]">

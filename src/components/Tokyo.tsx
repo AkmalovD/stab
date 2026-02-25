@@ -1,11 +1,6 @@
 'use client'
 
-import Footer from "./Footer"
-import Header from "./Header"
-import UniversityCard from "./UniversityCard" 
-// import { tokyoData } from 
-import Link from "next/link"
-import { useState } from "react"
+import { tokyoData } from "@/data/tokyoData"
 import {
   ArrowRight,
   BedDouble,
@@ -17,8 +12,13 @@ import {
   Landmark,
   MapPin,
   Smartphone
-} from 'lucide-react';
-import Image from 'next/image';
+} from 'lucide-react'
+import Image from 'next/image'
+import Link from "next/link"
+import { useState } from "react"
+import Footer from "./Footer"
+import Header from "./Header"
+import UniversityCard from "./UniversityCard"
 
 export default function Tokyo() {
   const [period, setPeriod] = useState<'monthly' | 'annual'>('monthly')
