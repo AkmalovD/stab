@@ -2,6 +2,12 @@
 
 // import Footer from '@/components/Footer';
 // import Header from '@/components/Header';
+import Footer from "@/components/Footer";
+import Header from "@/components/Header";
+import UniversityCard from "@/components/UniversityCard";
+import { City } from "@/types/city";
+import { Scholarship } from "@/types/scholarship";
+import { University } from "@/types/university";
 import {
   ArrowRight,
   BedDouble,
@@ -15,23 +21,15 @@ import {
   Smartphone
 } from 'lucide-react';
 import Image from 'next/image';
-// import Link from 'next/link';
-
-
-
-import Footer from "@/components/Footer";
-import Header from "@/components/Header";
-import UniversityCard from "@/components/UniversityCard";
-import { londonData } from "@/data/londonData";
 import Link from "next/link";
 import { useState } from "react";
 
-export default function Destinations() {
-  const [period, setPeriod] = useState<'monthly' | 'annual'>('monthly')
-  const [scholarshipType, setScholarshipType] = useState('All')
-  const filteredScholarships = londonData.scholarships.filter(s =>
+export default function Destinations({ londonData }: { londonData: City & { scholarships: Scholarship[]; universities: University[]; costOfLiving: { rent: number; food: number; transport: number; total: [number, number]; } } }) {
+  const [period, setPeriod] = useState<'monthly' | 'annual'>('monthly');
+  const [scholarshipType, setScholarshipType] = useState('All');
+  const filteredScholarships = londonData.scholarships.filter((s: Scholarship) =>
     scholarshipType === 'All' ? true : s.type === scholarshipType
-  )
+  );
   return (
     <div className="min-h-screen">
       <Header />
@@ -192,8 +190,18 @@ export default function Destinations() {
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {londonData.universities.map(u => (
-                  <UniversityCard key={u.name} university={u} />
+                {londonData.universities.map((u: University, idx: number) => (
+                  <UniversityCard
+                    key={u.name}
+                    university={{
+                      name: u.name,
+                      rank: (u as any).rank ?? idx + 3, // fallback rank if not present
+                      fields: (u as any).fields ?? ['Unknown'],
+                      image: (u as any).image ?? '/university-placeholder.jpg',
+                      description: (u as any).description ?? 'Описание недоступно',
+                      badge: (u as any).badge ?? '',
+                    }}
+                  />
                 ))}
               </div>
               <div className="mt-4 text-center">
@@ -218,7 +226,7 @@ export default function Destinations() {
                 ))}
               </div>
               <div className="space-y-4">
-                {filteredScholarships.map(s => (
+                {filteredScholarships.map((s: Scholarship) => (
                   <div key={s.name} className="bg-surface-light dark:bg-surface-dark p-5 rounded-xl border border-border-light dark:border-border-dark flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">

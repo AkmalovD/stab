@@ -2,6 +2,7 @@
 
 export interface Scholarship {
   id: string;
+  type: string;
   name: string;
   provider: string;
   country: string;
@@ -15,6 +16,7 @@ export interface Scholarship {
   requirements: string[];
   applicationUrl: string;
   difficulty: 'Easy' | 'Moderate' | 'Competitive' | 'Highly Competitive';
+  button: string
 }
 
 export interface ScholarshipFilters {
