@@ -1,5 +1,3 @@
-"use client"
-
 // import Footer from '@/components/Footer';
 // import Header from '@/components/Header';
 import Footer from "@/components/Footer";
@@ -24,7 +22,14 @@ import Image from 'next/image';
 import Link from "next/link";
 import { useState } from "react";
 
-export default function Destinations({ londonData }: { londonData: City & { scholarships: Scholarship[]; universities: University[]; costOfLiving: { rent: number; food: number; transport: number; total: [number, number]; } } }) {
+type Props = {
+  params: Promise<{ city: string }>
+} 
+
+export default async function Destinations({ params }: Props) {
+  const cityData = londonData [city as keyof typeof citiesData] 
+  
+  
   const [period, setPeriod] = useState<'monthly' | 'annual'>('monthly');
   const [scholarshipType, setScholarshipType] = useState('All');
   const filteredScholarships = londonData.scholarships.filter((s: Scholarship) =>
