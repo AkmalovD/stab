@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import UniversityCard from '@/components/UniversityCard';
-import { CityData, CityMeta, CityScholarship, CityUniversity } from '@/data/citiesData';
+import { CityData, CityMeta, CityScholarship, CityUniversity, cityMeta, allCities } from '@/data/citiesData';
 import {
   ArrowRight,
   BedDouble,
@@ -293,6 +293,45 @@ const CityDestinationClient: React.FC<Props> = ({ cityData, meta }) => {
               </div>
             </section>
 
+            {/* City Navigation */}
+            <section className="border-t border-border-light dark:border-border-dark pt-10">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6 text-center">
+                Explore Other Destinations
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {Object.values(cityMeta)
+                  .filter(c => c.slug !== meta.slug)
+                  .map(c => (
+                    <Link
+                      key={c.slug}
+                      href={`/destinations/${c.slug}`}
+                      className="group relative rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+                    >
+                      <div className="relative h-36">
+                        <Image
+                          src={c.image}
+                          alt={c.imageAlt}
+                          fill
+                          className="object-cover object-center transform transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-opacity" />
+                      </div>
+                      <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent flex items-end justify-between">
+                        <div>
+                          <p className="text-white font-bold text-base leading-tight">
+                            {allCities[c.slug]?.name ?? c.slug}
+                          </p>
+                          <p className="text-gray-300 text-xs">
+                            {allCities[c.slug]?.country ?? ''}
+                          </p>
+                        </div>
+                        <ArrowRight className="text-white w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                    </Link>
+                  ))}
+              </div>
+            </section>
+
             {/* CTA */}
             <section className="bg-gradient-to-r from-primary-dark to-primary rounded-2xl p-8 text-center text-white">
               <h2 className="text-2xl md:text-3xl font-bold mb-4">{meta.ctaTitle}</h2>
@@ -316,9 +355,3 @@ const CityDestinationClient: React.FC<Props> = ({ cityData, meta }) => {
 };
 
 export default CityDestinationClient;
-
-
-
-
-
-

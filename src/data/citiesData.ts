@@ -135,5 +135,5 @@ export const citiesData: Record<string, CityData> = {
   tokyo: tokyoData,
 };
 
-
+export const allCities: Record<string, CityData> = { london: londonData, paris: parisData, tokyo: tokyoData };
 
