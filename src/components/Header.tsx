@@ -167,6 +167,19 @@ const Header: React.FC = () => {
 
             {/* Right Side: CTA + Profile */}
             <div className="flex items-center gap-4">
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Link
+                  href="/plan-journey"
+                  className={`${isScrolled ? 'px-6' : 'px-5'} py-2 text-sm h-[44px] flex items-center justify-center bg-[#0d98ba] text-white rounded-full font-medium hover:bg-[#0b8299] transition-all duration-500`}
+                  style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
+                >
+                  Plan My Journey
+                </Link>
+              </motion.div>
+              
               {user ? (
                 <Link
                   href="/profile"
@@ -191,19 +204,6 @@ const Header: React.FC = () => {
                   Login
                 </Link>
               )}
-
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <Link
-                  href="/plan-journey"
-                  className={`${isScrolled ? 'px-6' : 'px-5'} py-2 text-sm h-[44px] flex items-center justify-center bg-[#0d98ba] text-white rounded-full font-medium hover:bg-[#0b8299] transition-all duration-500`}
-                  style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
-                >
-                  Plan My Journey
-                </Link>
-              </motion.div>
             </div>
           </div>
         </div>
