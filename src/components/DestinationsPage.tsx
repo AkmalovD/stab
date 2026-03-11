@@ -218,19 +218,6 @@ const HERO_STATS = [
   { value: '10K+', label: 'REVIEWS' },
 ] as const;
 
-function HeroStats() {
-  return (
-    <div className="flex justify-center gap-12 mt-8">
-      {HERO_STATS.map(({ value, label }) => (
-        <div key={label} className="text-center">
-          <p className="text-2xl font-bold text-gray-900">{value}</p>
-          <p className="text-xs text-gray-500 tracking-widest mt-0.5">{label}</p>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 // ─── Main page component ──────────────────────────────────────────────────────
 
 const DestinationsPage: React.FC = () => {
@@ -319,7 +306,6 @@ const DestinationsPage: React.FC = () => {
           <p className="text-gray-500 max-w-md mx-auto text-base">
             Discover world-class academic hubs tailored to your career goals and budget.
           </p>
-          <HeroStats />
         </section>
 
         <div className="max-w-7xl bg-white mx-auto px-4 sm:px-6 lg:px-8 py-8">
