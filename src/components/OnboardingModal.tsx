@@ -1,7 +1,9 @@
+'use client'
+
 import { useAuth } from '@/auth/AuthContext';
 import { journeyProfileApi } from '@/services/profileApi';
 import { JourneyProfile } from '@/types';
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 interface OnboardingModalProps {
@@ -14,13 +16,37 @@ interface OnboardingModalProps {
 const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComplete, onCancel, initialName  }) => {
   const [step, setStep] = useState(1);
   const { user } = useAuth();
+  const resolvedInitialName = useMemo(() => {
+    const explicitName = initialName?.trim();
+    if (explicitName) {
+      return explicitName;
+    }
+
+    return (
+      user?.user_metadata?.full_name?.trim() ||
+      user?.user_metadata?.name?.trim() ||
+      ''
+    );
+  }, [initialName, user?.user_metadata?.full_name, user?.user_metadata?.name]);
+
   const [profile, setProfile] = useState<Partial<JourneyProfile>>({
-    name: initialName || '',
+    name: '',
     targetCountry: '',
     studyLevel: 'Masters',
     startDate: new Date(),
     createdAt: new Date(),
   });
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    setStep(1);
+    setProfile((prev) => ({
+      ...prev,
+      // Keep manually entered value if user already typed one.
+      name: prev.name?.trim() ? prev.name : resolvedInitialName,
+    }));
+  }, [isOpen, resolvedInitialName]);
 
   if (!isOpen) return null;
 

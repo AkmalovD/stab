@@ -6,6 +6,7 @@ import Header from '@/components/Header';
 import OnboardingModal from '@/components/OnboardingModal';
 import PhaseCard from '@/components/PhaseCard';
 import ProgressDashboard from '@/components/ProgressDashboard';
+import { useAuth } from '@/auth/AuthContext';
 import { journeyProfileApi } from '@/services/profileApi';
 import { Document, JourneyProfile, Phase } from '@/types';
 import { documentsList, journeyPhases } from '@/utils/journeyData';
@@ -13,29 +14,64 @@ import { CheckSquare, ClipboardList, FileText } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 export default function PlanJourney() {
+  const { user } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [profile, setProfile] = useState<JourneyProfile | null>(null);
   const [phases, setPhases] = useState<Phase[]>(journeyPhases);
   const [documents, setDocuments] = useState<Document[]>(documentsList);
 
-  // Check if user has profile in localStorage
+  const userDisplayName =
+    user?.user_metadata?.full_name ||
+    user?.user_metadata?.name ||
+    '';
+
+  // Check if user has profile in localStorage/API
   useEffect(() => {
     const loadData = async () => {
       const profileId = localStorage.getItem('journeyProfileId');
+      const savedProfile = localStorage.getItem('journeyProfile');
+
+      if (savedProfile) {
+        try {
+          const parsedProfile = JSON.parse(savedProfile) as JourneyProfile & {
+            startDate: string | Date;
+            createdAt: string | Date;
+          };
+          setProfile({
+            ...parsedProfile,
+            startDate: new Date(parsedProfile.startDate),
+            createdAt: new Date(parsedProfile.createdAt),
+          });
+
+          const savedPhases = localStorage.getItem('journeyPhases');
+          if (savedPhases) {
+            setPhases(JSON.parse(savedPhases));
+          }
+
+          const savedDocuments = localStorage.getItem('journeyDocuments');
+          if (savedDocuments) {
+            setDocuments(JSON.parse(savedDocuments));
+          }
+          return;
+        } catch (error) {
+          console.log('Error parsing local profile:', error);
+          localStorage.removeItem('journeyProfile');
+        }
+      }
 
       if (profileId) {
         try {
-          const savedProfile = await journeyProfileApi.getById(parseInt(profileId));
+          const apiProfile = await journeyProfileApi.getById(parseInt(profileId));
 
           setProfile({
-            name: savedProfile.full_name,
-            targetCountry: savedProfile.destination_country,
+            name: apiProfile.full_name,
+            targetCountry: apiProfile.destination_country,
             studyLevel: 'Masters',
-            startDate: new Date(savedProfile.intended_start_date),
-            createdAt: new Date(savedProfile.created_at || ''),
-            fullName: savedProfile.full_name,
-            destinationCountry: savedProfile.destination_country,
-            intendedStartDate: savedProfile.intended_start_date
+            startDate: new Date(apiProfile.intended_start_date),
+            createdAt: new Date(apiProfile.created_at || ''),
+            fullName: apiProfile.full_name,
+            destinationCountry: apiProfile.destination_country,
+            intendedStartDate: apiProfile.intended_start_date
           });
 
           const savedPhases = localStorage.getItem('journeyPhases');
@@ -56,34 +92,11 @@ export default function PlanJourney() {
           localStorage.setItem('journeyPhases', JSON.stringify(loadedPhases));
         } catch (error) {
           console.log('Error loading profile:', error);
-          // Create default test profile instead of showing onboarding
-          const defaultProfile: JourneyProfile = {
-            name: 'Test User',
-            targetCountry: 'USA',
-            studyLevel: 'Masters',
-            startDate: new Date('2026-09-01'),
-            createdAt: new Date(),
-            fullName: 'Test User',
-            destinationCountry: 'USA',
-            intendedStartDate: '2026-09-01'
-          };
-          setProfile(defaultProfile);
-          localStorage.setItem('journeyProfile', JSON.stringify(defaultProfile));
+          localStorage.removeItem('journeyProfileId');
+          setShowOnboarding(true);
         }
       } else {
-        // Create default test profile instead of showing onboarding
-        const defaultProfile: JourneyProfile = {
-          name: 'Test User',
-          targetCountry: 'USA',
-          studyLevel: 'Masters',
-          startDate: new Date('2026-09-01'),
-          createdAt: new Date(),
-          fullName: 'Test User',
-          destinationCountry: 'USA',
-          intendedStartDate: '2026-09-01'
-        };
-        setProfile(defaultProfile);
-        localStorage.setItem('journeyProfile', JSON.stringify(defaultProfile));
+        setShowOnboarding(true);
       }
     };
     
@@ -309,7 +322,7 @@ export default function PlanJourney() {
         isOpen={showOnboarding} 
         onComplete={handleOnboardingComplete} 
         onCancel={handleOnboardingCancel} 
-        initialName={profile?.name || ''}
+        initialName={profile?.name || userDisplayName}
       />
     </>
   );

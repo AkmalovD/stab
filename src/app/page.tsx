@@ -10,7 +10,11 @@ import KeyFeatures from '../components/KeyFeatures';
 import Testimonials from '../components/Testimonials';
 
 export default function Home() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return null;
+  }
 
   return (
     <>
