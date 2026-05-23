@@ -1,11 +1,13 @@
-import { createClient } from '@supabase/supabase-js'
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+// Mock Supabase client — no network calls, used for offline/demo mode
+export const supabase = {
     auth: {
-        persistSession: true,
-        autoRefreshToken: true,
+        getSession: async () => ({ data: { session: null }, error: null }),
+        onAuthStateChange: (_cb: unknown) => ({
+            data: { subscription: { unsubscribe: () => {} } }
+        }),
+        signOut: async () => ({ error: null }),
+        signInWithPassword: async () => ({ data: { user: null, session: null }, error: null }),
+        signUp: async () => ({ data: { user: null, session: null }, error: null }),
+        resetPasswordForEmail: async () => ({ data: {}, error: null }),
     }
-})
+} as any
