@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    /* "node18" is the modern replacement for the deprecated "node"/node10
+       algorithm. moduleResolution is deliberately omitted: TypeScript infers
+       the matching one from "module", and there is no "node18" resolution
+       value (valid ones are node16, nodenext, bundler).
+       package.json has "type": "module", so the compiler emits ESM. */
+    "module": "node18",
+    "target": "ES2023",
+    "lib": ["ES2023"],
+
+    "rootDir": "./src",
+    "outDir": "./dist",
+    /* paths no longer needs baseUrl; it resolves relative to this file. */
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+
+    /* Nest's dependency injection reads runtime type metadata that these two
+       flags make the compiler emit. Without them, DI cannot resolve providers. */
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+
+    "strict": true,
+    "strictPropertyInitialization": false,
+
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "declaration": false,
+    "removeComments": true,
+    "sourceMap": true,
+    "incremental": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

@@ -58,3 +58,6 @@ coverage
 Thumbs.db
 .DS_Store?
 ._*
+# Prisma generated client (regenerate with `npm run prisma:generate -w @stab/api`)
+api/src/generated/
+*.tsbuildinfo

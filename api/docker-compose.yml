@@ -1,0 +1,26 @@
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: stab-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: stab
+      POSTGRES_PASSWORD: stab
+      POSTGRES_DB: stab
+    ports:
+      # host:container — 5434 on your machine maps to Postgres in the container.
+      # 5432/5433 are taken by another project, so STAB uses 5434.
+      # which is why DATABASE_URL points at localhost.
+      - '5434:5432'
+    volumes:
+      # Named volume: data survives `docker compose down`.
+      # Use `docker compose down -v` when you want a truly clean database.
+      - stab-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U stab -d stab']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  stab-db-data:

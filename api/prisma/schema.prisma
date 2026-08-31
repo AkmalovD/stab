@@ -1,0 +1,24 @@
+// Prisma schema. `npm run prisma:migrate -w @stab/api` turns this file into SQL
+// migrations and regenerates the typed client.
+// Note: as of Prisma 7 the connection URL lives in prisma.config.ts, not here.
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Minimal starter model so the migration pipeline has something to create.
+// The real domain (City, University, Scholarship, JourneyProfile, ...) is yours to model.
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  displayName  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
