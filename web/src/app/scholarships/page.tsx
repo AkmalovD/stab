@@ -4,15 +4,9 @@ import Footer from '@/components/Footer';
 import Header from '@/components/Header';
 import ScholarshipCard from '@/components/ScholarshipCard';
 import ScholarshipFilters from '@/components/ScholarshipFilters';
-import {
-    filterScholarships,
-    getCountries,
-    getCoverageTypes,
-    getStudyLevels,
-    getUpcomingDeadlines,
-    scholarshipsData
-} from '@/utils/scholarshipData';
-import { useMemo, useState } from 'react';
+import { scholarshipsApi } from '@/services/contentApi';
+import { Scholarship } from '@/types';
+import { useEffect, useMemo, useState } from 'react';
 
 export default function Scholarships() {
   const [filters, setFilters] = useState<{
@@ -23,19 +17,63 @@ export default function Scholarships() {
   }>({});
 
   const [showUpcoming, setShowUpcoming] = useState(false);
+  const [scholarships, setScholarships] = useState<Scholarship[]>([]);
+  const [countries, setCountries] = useState<string[]>([]);
+  const [studyLevels, setStudyLevels] = useState<string[]>([]);
+  const [coverageTypes, setCoverageTypes] = useState<string[]>([]);
+
+  useEffect(() => {
+    scholarshipsApi
+      .list()
+      .then(setScholarships)
+      .catch((error) => console.error('Failed to load scholarships:', error));
+
+    scholarshipsApi
+      .filters()
+      .then((options) => {
+        setCountries(options.countries);
+        setStudyLevels(options.studyLevels);
+        setCoverageTypes(options.coverageTypes);
+      })
+      .catch((error) => console.error('Failed to load filter options:', error));
+  }, []);
+
+  const upcomingDeadlines = useMemo(() => {
+    const now = new Date();
+    return scholarships
+      .filter((scholarship) => new Date(scholarship.deadline) > now)
+      .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime())
+      .slice(0, 5);
+  }, [scholarships]);
 
   // Filter scholarships based on current filters
   const filteredScholarships = useMemo(() => {
     if (showUpcoming) {
-      return getUpcomingDeadlines();
+      return upcomingDeadlines;
     }
-    return filterScholarships(filters);
-  }, [filters, showUpcoming]);
 
-  // Get filter options
-  const countries = useMemo(() => getCountries(), []);
-  const studyLevels = useMemo(() => getStudyLevels(), []);
-  const coverageTypes = useMemo(() => getCoverageTypes(), []);
+    return scholarships.filter((scholarship) => {
+      if (filters.country && scholarship.country !== filters.country) return false;
+      if (
+        filters.studyLevel &&
+        scholarship.studyLevel !== filters.studyLevel &&
+        scholarship.studyLevel !== 'All Levels'
+      ) {
+        return false;
+      }
+      if (filters.coverage && scholarship.coverage !== filters.coverage) return false;
+      if (filters.searchQuery) {
+        const query = filters.searchQuery.toLowerCase();
+        return (
+          scholarship.name.toLowerCase().includes(query) ||
+          scholarship.provider.toLowerCase().includes(query) ||
+          scholarship.description.toLowerCase().includes(query)
+        );
+      }
+      return true;
+    });
+  }, [scholarships, filters, showUpcoming, upcomingDeadlines]);
+
   return (
     <>
       <Header />
@@ -55,13 +93,13 @@ export default function Scholarships() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-xl p-6 shadow-sm">
             <div className="text-3xl font-bold text-[#0d98ba] mb-1">
-              {scholarshipsData.length}
+              {scholarships.length}
             </div>
             <div className="text-sm text-[#4c809a]">Total Scholarships</div>
           </div>
           <div className="bg-white rounded-xl p-6 shadow-sm">
             <div className="text-3xl font-bold text-[#0d98ba] mb-1">
-              {scholarshipsData.filter(s => s.coverage === 'Full').length}
+              {scholarships.filter(s => s.coverage === 'Full').length}
             </div>
             <div className="text-sm text-[#4c809a]">Full Funding</div>
           </div>
@@ -73,7 +111,7 @@ export default function Scholarships() {
           </div>
           <div className="bg-white rounded-xl p-6 shadow-sm">
             <div className="text-3xl font-bold text-[#0d98ba] mb-1">
-              {getUpcomingDeadlines().length}
+              {upcomingDeadlines.length}
             </div>
             <div className="text-sm text-[#4c809a]">Upcoming Deadlines</div>
           </div>

@@ -1,7 +1,7 @@
 'use client'
 
 import { City } from '@/types';
-import { citiesData, searchCities } from '@/utils/data';
+import { citiesApi } from '@/services/contentApi';
 import { useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import CityCard from './CityCard';
@@ -11,10 +11,17 @@ import VisualComparison from './VisualComparison';
 
 const CityComparison: React.FC = () => {
   const [selectedCities, setSelectedCities] = useState<string[]>([]);
-  const [availableCities] = useState<City[]>(citiesData);
+  const [availableCities, setAvailableCities] = useState<City[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [showAllCities, setShowAllCities] = useState<boolean>(false);
   const searchParams = useSearchParams();
+
+  useEffect(() => {
+    citiesApi
+      .list()
+      .then(setAvailableCities)
+      .catch((error) => console.error('Failed to load cities:', error));
+  }, []);
 
   // Handle URL parameters for pre-selection
   useEffect(() => {
@@ -22,7 +29,11 @@ const CityComparison: React.FC = () => {
     const cityQuery = searchParams?.get('city');
 
     if (searchQuery) {
-      const foundCities = searchCities(searchQuery);
+      const foundCities = availableCities.filter(
+        (city) =>
+          city.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          city.country.toLowerCase().includes(searchQuery.toLowerCase())
+      );
       if (foundCities.length > 0) {
         setSelectedCities([foundCities[0].id]);
       }

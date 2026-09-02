@@ -1,7 +1,3 @@
-// Prisma schema. `npm run prisma:migrate -w @stab/api` turns this file into SQL
-// migrations and regenerates the typed client.
-// Note: as of Prisma 7 the connection URL lives in prisma.config.ts, not here.
-
 generator client {
   provider     = "prisma-client"
   output       = "../src/generated/prisma"
@@ -12,13 +8,180 @@ datasource db {
   provider = "postgresql"
 }
 
-// Minimal starter model so the migration pipeline has something to create.
-// The real domain (City, University, Scholarship, JourneyProfile, ...) is yours to model.
 model User {
   id           String   @id @default(uuid())
   email        String   @unique
   passwordHash String
   displayName  String?
+  avatarUrl    String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  profile         Profile?
+  refreshTokens   RefreshToken[]
+  journeyProfiles JourneyProfile[]
+}
+
+model Profile {
+  id               String   @id @default(uuid())
+  userId           String   @unique
+  dateOfBirth      String?
+  location         String?
+  university       String?
+  major            String?
+  studyDestination String?
+  targetUniversity String?
+  budget           String?
+  startDate        String?
+  bio              String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String
+  tokenHash String
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model JourneyProfile {
+  id                 Int      @id @default(autoincrement())
+  userId             String
+  fullName           String
+  destinationCountry String
+  intendedStartDate  DateTime
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  phases    JourneyPhase[]
+  documents JourneyDocument[]
+
+  @@index([userId])
+}
+
+model JourneyPhase {
+  id               String @id @default(uuid())
+  journeyProfileId Int
+  number           Int
+  title            String
+  description      String
+  timeframe        String
+  status           String
+  icon             String
+
+  journeyProfile JourneyProfile @relation(fields: [journeyProfileId], references: [id], onDelete: Cascade)
+  tasks          JourneyTask[]
+
+  @@index([journeyProfileId])
+}
+
+model JourneyTask {
+  id          String  @id @default(uuid())
+  phaseId     String
+  position    Int     @default(0)
+  title       String
+  description String
+  completed   Boolean @default(false)
+  priority    String
+  category    String
+
+  phase JourneyPhase @relation(fields: [phaseId], references: [id], onDelete: Cascade)
+
+  @@index([phaseId])
+}
+
+model JourneyDocument {
+  id               String    @id @default(uuid())
+  journeyProfileId Int
+  position         Int       @default(0)
+  name             String
+  category         String
+  status           String
+  required         Boolean   @default(false)
+  expiryDate       DateTime?
+
+  journeyProfile JourneyProfile @relation(fields: [journeyProfileId], references: [id], onDelete: Cascade)
+
+  @@index([journeyProfileId])
+}
+
+model Destination {
+  slug              String   @id
+  name              String
+  country           String
+  image             String
+  region            String
+  budgetTier        String
+  monthlyBudgetMin  Int
+  monthlyBudgetMax  Int
+  universitiesCount Int
+  scholarshipMatch  Int
+  tags              String[]
+  languages         String[]
+  hasDetailPage     Boolean  @default(false)
+}
+
+model City {
+  slug              String  @id
+  name              String
+  country           String
+  imageUrl          String
+  flag              String
+  costOfLiving      String
+  costsRent         String
+  costsFood         String
+  costsTransport    String
+  costsTuition      String
+  housing           Int
+  food              Int
+  transport         Int
+  entertainment     Int
+  utilities         Int
+  population        Int?
+  climate           String?
+  language          String?
+  currency          String?
+  timezone          String?
+  studentPopulation Int?
+}
+
+model CityDetail {
+  slug         String @id
+  name         String
+  country      String
+  universities Json
+  costOfLiving Json
+  scholarships Json
+  housing      Json
+  essentials   Json
+  timeline     Json
+  meta         Json
+}
+
+model Scholarship {
+  slug              String   @id
+  name              String
+  provider          String
+  country           String
+  amount            String
+  coverage          String
+  deadline          DateTime
+  studyLevel        String
+  fieldOfStudy      String[]
+  eligibleCountries String[]
+  description       String
+  requirements      String[]
+  applicationUrl    String
+  difficulty        String
+  type              String?
 }

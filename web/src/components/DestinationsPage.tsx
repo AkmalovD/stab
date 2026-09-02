@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import Footer from '@/components/Footer';
 import Header from '@/components/Header';
@@ -25,8 +25,8 @@ import {
   Region,
   SORT_OPTIONS,
   SortOption,
-  destinationsListData,
 } from '@/data/destinationsListData';
+import { destinationsApi } from '@/services/contentApi';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -235,6 +235,16 @@ const DestinationsPage: React.FC = () => {
   // — Pagination state —
   const [page, setPage] = useState(1);
 
+  // — Data —
+  const [destinations, setDestinations] = useState<DestinationListing[]>([]);
+
+  useEffect(() => {
+    destinationsApi
+      .list()
+      .then(setDestinations)
+      .catch((error) => console.error('Failed to load destinations:', error));
+  }, []);
+
   // — Active filter chips —
   const activeFilters = useMemo(() => {
     const chips: Array<{ label: string; onRemove: () => void }> = [];
@@ -253,7 +263,7 @@ const DestinationsPage: React.FC = () => {
 
   // — Filtered + sorted results —
   const filtered = useMemo(() => {
-    let results = destinationsListData.filter((city) => {
+    let results = destinations.filter((city) => {
       const query = search.toLowerCase();
       if (query && !city.name.toLowerCase().includes(query) && !city.country.toLowerCase().includes(query)) return false;
       if (region !== 'All' && city.region !== region) return false;
@@ -277,7 +287,7 @@ const DestinationsPage: React.FC = () => {
     }
 
     return results;
-  }, [search, region, budget, language, scholarshipsOnly, sort]);
+  }, [destinations, search, region, budget, language, scholarshipsOnly, sort]);
 
   // — Paginated slice —
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));

@@ -1,14 +1,14 @@
 'use client'
 
 import { useAuth } from '@/auth/AuthContext';
-import { journeyProfileApi } from '@/services/profileApi';
+import { journeyProfileApi, type JourneyProfileData } from '@/services/profileApi';
 import { JourneyProfile } from '@/types';
 import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 interface OnboardingModalProps {
   isOpen: boolean;
-  onComplete: (profile: JourneyProfile) => void;
+  onComplete: (created: JourneyProfileData, studyLevel: JourneyProfile['studyLevel']) => void;
   onCancel: () => void;
   initialName?: string;
 }
@@ -57,12 +57,12 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComplete, o
     }
 
     try {
-      await journeyProfileApi.create({
+      const created = await journeyProfileApi.create({
         full_name: profile.name || '',
         destination_country: profile.targetCountry || '',
         intended_start_date: profile.startDate?.toISOString().split('T')[0] || '',
       });
-      onComplete(profile as JourneyProfile);
+      onComplete(created, profile.studyLevel || 'Masters');
     } catch (error) {
       console.error('Error saving profile:', error);
       toast('Failed to save profile');

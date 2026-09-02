@@ -1,74 +1,105 @@
 'use client'
 
+import axios from 'axios'
 import { createContext, useContext, useEffect, useState } from 'react'
 
-const MOCK_USER = {
-    id: 'mock-user-001',
-    email: 'demo@stab.app',
+import { getAccessToken } from '@/lib/authTokens'
+import { authApi, type AuthUser } from '@/services/authApi'
+
+interface SessionUser {
+    id: string
+    email: string
     user_metadata: {
-        full_name: 'Alex Johnson',
-        name: 'Alex Johnson',
-        avatar_url: null as string | null,
-    },
-    app_metadata: {},
-    aud: 'authenticated',
-    created_at: '2024-01-01T00:00:00.000Z',
+        full_name: string
+        name: string
+        avatar_url: string | null
+    }
+    app_metadata: Record<string, unknown>
+    aud: string
+    created_at: string
 }
 
-type MockUser = typeof MOCK_USER
-
-const AUTH_KEY = 'stab_mock_auth'
-
 interface AuthContextType {
-    user: MockUser | null
+    user: SessionUser | null
     loading: boolean
-    login: (email: string, password: string, rememberMe?: boolean) => Promise<{ user: MockUser | null; error: string | null }>
-    register: (name: string, email: string, password: string) => Promise<{ user: MockUser | null; error: string | null }>
+    login: (email: string, password: string, rememberMe?: boolean) => Promise<{ user: SessionUser | null; error: string | null }>
+    register: (name: string, email: string, password: string) => Promise<{ user: SessionUser | null; error: string | null }>
     logout: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType)
 
+function mapUser(user: AuthUser): SessionUser {
+    const displayName = user.displayName ?? ''
+    return {
+        id: user.id,
+        email: user.email,
+        user_metadata: {
+            full_name: displayName,
+            name: displayName,
+            avatar_url: user.avatarUrl ?? null,
+        },
+        app_metadata: {},
+        aud: 'authenticated',
+        created_at: user.createdAt,
+    }
+}
+
+function extractError(error: unknown): string {
+    if (axios.isAxiosError(error)) {
+        const message = error.response?.data?.message
+        if (Array.isArray(message)) return message[0]
+        if (typeof message === 'string') return message
+    }
+    return 'Something went wrong. Please try again.'
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const [user, setUser] = useState<MockUser | null>(null)
+    const [user, setUser] = useState<SessionUser | null>(null)
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        try {
-            const stored = localStorage.getItem(AUTH_KEY)
-            if (stored) {
-                setUser(JSON.parse(stored))
-            } else {
-                // Auto-login with mock user by default for demo
-                localStorage.setItem(AUTH_KEY, JSON.stringify(MOCK_USER))
-                setUser(MOCK_USER)
+        const restore = async () => {
+            if (!getAccessToken()) {
+                setLoading(false)
+                return
             }
-        } catch {
-            setUser(MOCK_USER)
+
+            try {
+                const me = await authApi.me()
+                setUser(mapUser(me))
+            } catch {
+                setUser(null)
+            } finally {
+                setLoading(false)
+            }
         }
-        setLoading(false)
+
+        restore()
     }, [])
 
-    const login = async (email: string, _password: string, _rememberMe = false) => {
-        const loggedInUser: MockUser = { ...MOCK_USER, email }
-        localStorage.setItem(AUTH_KEY, JSON.stringify(loggedInUser))
-        setUser(loggedInUser)
-        return { user: loggedInUser, error: null }
+    const login = async (email: string, password: string, rememberMe = false) => {
+        try {
+            const loggedIn = mapUser(await authApi.login(email, password, rememberMe))
+            setUser(loggedIn)
+            return { user: loggedIn, error: null }
+        } catch (error) {
+            return { user: null, error: extractError(error) }
+        }
     }
 
-    const register = async (name: string, email: string, _password: string) => {
-        const newUser: MockUser = {
-            ...MOCK_USER,
-            email,
-            user_metadata: { ...MOCK_USER.user_metadata, full_name: name, name },
+    const register = async (name: string, email: string, password: string) => {
+        try {
+            const created = mapUser(await authApi.register(name, email, password))
+            setUser(created)
+            return { user: created, error: null }
+        } catch (error) {
+            return { user: null, error: extractError(error) }
         }
-        localStorage.setItem(AUTH_KEY, JSON.stringify(newUser))
-        setUser(newUser)
-        return { user: newUser, error: null }
     }
 
     const logout = async () => {
-        localStorage.removeItem(AUTH_KEY)
+        await authApi.logout()
         setUser(null)
     }
 

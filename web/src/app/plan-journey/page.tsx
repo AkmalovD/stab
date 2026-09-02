@@ -1,112 +1,107 @@
 'use client'
 
+import { useAuth } from '@/auth/AuthContext';
 import DocumentStatus from '@/components/DocumentStatus';
 import Footer from '@/components/Footer';
 import Header from '@/components/Header';
 import OnboardingModal from '@/components/OnboardingModal';
 import PhaseCard from '@/components/PhaseCard';
 import ProgressDashboard from '@/components/ProgressDashboard';
-import { useAuth } from '@/auth/AuthContext';
-import { journeyProfileApi } from '@/services/profileApi';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import {
+  journeyApi,
+  journeyProfileApi,
+  type JourneyProfileData,
+} from '@/services/profileApi';
 import { Document, JourneyProfile, Phase } from '@/types';
-import { documentsList, journeyPhases } from '@/utils/journeyData';
 import { CheckSquare, ClipboardList, FileText } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+
+function mapProfile(data: JourneyProfileData, studyLevel: JourneyProfile['studyLevel']): JourneyProfile {
+  return {
+    name: data.full_name,
+    targetCountry: data.destination_country,
+    studyLevel,
+    startDate: new Date(data.intended_start_date),
+    createdAt: data.created_at ? new Date(data.created_at) : new Date(),
+    fullName: data.full_name,
+    destinationCountry: data.destination_country,
+    intendedStartDate: data.intended_start_date,
+  };
+}
 
 export default function PlanJourney() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [profileId, setProfileId] = useState<number | null>(null);
   const [profile, setProfile] = useState<JourneyProfile | null>(null);
-  const [phases, setPhases] = useState<Phase[]>(journeyPhases);
-  const [documents, setDocuments] = useState<Document[]>(documentsList);
+  const [phases, setPhases] = useState<Phase[]>([]);
+  const [documents, setDocuments] = useState<Document[]>([]);
 
   const userDisplayName =
     user?.user_metadata?.full_name ||
     user?.user_metadata?.name ||
     '';
 
-  // Check if user has profile in localStorage/API
+  const loadJourney = async (data: JourneyProfileData, studyLevel: JourneyProfile['studyLevel']) => {
+    if (data.id === undefined) return;
+
+    setProfileId(data.id);
+    setProfile(mapProfile(data, studyLevel));
+
+    const [loadedPhases, loadedDocuments] = await Promise.all([
+      journeyApi.getPhases(data.id),
+      journeyApi.getDocuments(data.id),
+    ]);
+
+    setPhases(loadedPhases as Phase[]);
+    setDocuments(
+      loadedDocuments.map((document) => ({
+        ...document,
+        expiryDate: document.expiryDate ? new Date(document.expiryDate) : undefined,
+      })) as Document[]
+    );
+  };
+
   useEffect(() => {
-    const loadData = async () => {
-      const profileId = localStorage.getItem('journeyProfileId');
-      const savedProfile = localStorage.getItem('journeyProfile');
+    if (authLoading) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
 
-      if (savedProfile) {
-        try {
-          const parsedProfile = JSON.parse(savedProfile) as JourneyProfile & {
-            startDate: string | Date;
-            createdAt: string | Date;
-          };
-          setProfile({
-            ...parsedProfile,
-            startDate: new Date(parsedProfile.startDate),
-            createdAt: new Date(parsedProfile.createdAt),
-          });
-
-          const savedPhases = localStorage.getItem('journeyPhases');
-          if (savedPhases) {
-            setPhases(JSON.parse(savedPhases));
-          }
-
-          const savedDocuments = localStorage.getItem('journeyDocuments');
-          if (savedDocuments) {
-            setDocuments(JSON.parse(savedDocuments));
-          }
-          return;
-        } catch (error) {
-          console.log('Error parsing local profile:', error);
-          localStorage.removeItem('journeyProfile');
-        }
-      }
-
-      if (profileId) {
-        try {
-          const apiProfile = await journeyProfileApi.getById(parseInt(profileId));
-
-          setProfile({
-            name: apiProfile.full_name,
-            targetCountry: apiProfile.destination_country,
-            studyLevel: 'Masters',
-            startDate: new Date(apiProfile.intended_start_date),
-            createdAt: new Date(apiProfile.created_at || ''),
-            fullName: apiProfile.full_name,
-            destinationCountry: apiProfile.destination_country,
-            intendedStartDate: apiProfile.intended_start_date
-          });
-
-          const savedPhases = localStorage.getItem('journeyPhases');
-          let loadedPhases = savedPhases ? JSON.parse(savedPhases) : journeyPhases;
-          
-          // Unlock phases based on previous phase completion
-          loadedPhases = loadedPhases.map((phase: Phase, index: number) => {
-            if (phase.status === 'locked' && index > 0) {
-              const previousPhase = loadedPhases[index - 1];
-              if (previousPhase.status === 'completed') {
-                return { ...phase, status: 'not-started' };
-              }
-            }
-            return phase;
-          });
-          
-          setPhases(loadedPhases);
-          localStorage.setItem('journeyPhases', JSON.stringify(loadedPhases));
-        } catch (error) {
-          console.log('Error loading profile:', error);
-          localStorage.removeItem('journeyProfileId');
+    const load = async () => {
+      try {
+        const profiles = await journeyProfileApi.getAll();
+        if (profiles.length > 0) {
+          await loadJourney(profiles[0], 'Masters');
+        } else {
           setShowOnboarding(true);
         }
-      } else {
+      } catch (error) {
+        console.error('Error loading journey:', error);
         setShowOnboarding(true);
+      } finally {
+        setLoading(false);
       }
     };
-    
-    loadData();
-  }, []);
 
-  const handleOnboardingComplete = (newProfile: JourneyProfile) => {
-    setProfile(newProfile);
-    localStorage.setItem('journeyProfile', JSON.stringify(newProfile));
-    setShowOnboarding(false);
+    load();
+  }, [authLoading, user]);
+
+  const handleOnboardingComplete = async (
+    created: JourneyProfileData,
+    studyLevel: JourneyProfile['studyLevel']
+  ) => {
+    try {
+      await loadJourney(created, studyLevel);
+      setShowOnboarding(false);
+    } catch (error) {
+      console.error('Error loading new journey:', error);
+      toast.error('Failed to load your journey');
+    }
   };
 
   const handleOnboardingCancel = () => {
@@ -117,73 +112,71 @@ export default function PlanJourney() {
     setShowOnboarding(true);
   };
 
-  const handleTaskToggle = (phaseId: string, taskId: string) => {
-    const updatedPhases = phases.map((phase, index) => {
-      if (phase.id === phaseId) {
-        const updatedTasks = phase.tasks.map((task) => {
-          if (task.id === taskId) {
-            return { ...task, completed: !task.completed };
-          }
-          return task;
-        });
+  const handleTaskToggle = async (phaseId: string, taskId: string) => {
+    if (profileId === null) return;
 
-        // Update phase status based on task completion
-        const allCompleted = updatedTasks.every((task) => task.completed);
-        const someCompleted = updatedTasks.some((task) => task.completed);
-        
-        let newStatus: Phase['status'] = phase.status;
-        if (allCompleted) {
-          newStatus = 'completed';
-        } else if (someCompleted) {
-          newStatus = 'in-progress';
-        } else if (!someCompleted && phase.status === 'in-progress') {
-          newStatus = 'not-started';
-        }
+    const phase = phases.find((item) => item.id === phaseId);
+    const task = phase?.tasks.find((item) => item.id === taskId);
+    if (!task) return;
 
-        return { ...phase, tasks: updatedTasks, status: newStatus };
-      }
-      return phase;
-    });
-
-    // Unlock next phase if current phase is completed
-    const finalPhases = updatedPhases.map((phase, index) => {
-      if (phase.status === 'locked' && index > 0) {
-        const previousPhase = updatedPhases[index - 1];
-        if (previousPhase.status === 'completed') {
-          return { ...phase, status: 'not-started' as Phase['status'] };
-        }
-      }
-      return phase;
-    });
-
-    setPhases(finalPhases);
-    localStorage.setItem('journeyPhases', JSON.stringify(finalPhases));
+    try {
+      const updated = await journeyApi.toggleTask(profileId, taskId, !task.completed);
+      setPhases(updated as Phase[]);
+    } catch (error) {
+      console.error('Error updating task:', error);
+      toast.error('Failed to update task');
+    }
   };
 
-  const handleDocumentStatusChange = (docId: string, newStatus: Document['status']) => {
-    const updatedDocuments = documents.map((doc) =>
-      doc.id === docId ? { ...doc, status: newStatus } : doc
-    );
-    setDocuments(updatedDocuments);
-    localStorage.setItem('journeyDocuments', JSON.stringify(updatedDocuments));
+  const handleDocumentStatusChange = async (docId: string, newStatus: Document['status']) => {
+    if (profileId === null) return;
+
+    try {
+      const updated = await journeyApi.updateDocument(profileId, docId, newStatus);
+      setDocuments((prev) =>
+        prev.map((document) =>
+          document.id === docId
+            ? {
+                ...document,
+                status: updated.status as Document['status'],
+              }
+            : document
+        )
+      );
+    } catch (error) {
+      console.error('Error updating document:', error);
+      toast.error('Failed to update document');
+    }
   };
 
-  const handleResetJourney = () => {
-    if (window.confirm('Are you sure you want to reset your journey? This will clear all progress.')) {
-      localStorage.removeItem('journeyProfile');
-      localStorage.removeItem('journeyPhases');
-      localStorage.removeItem('journeyDocuments');
+  const handleResetJourney = async () => {
+    if (profileId === null) return;
+    if (!window.confirm('Are you sure you want to reset your journey? This will clear all progress.')) {
+      return;
+    }
+
+    try {
+      await journeyProfileApi.delete(profileId);
+      setProfileId(null);
       setProfile(null);
-      setPhases(journeyPhases);
-      setDocuments(documentsList);
+      setPhases([]);
+      setDocuments([]);
+      setShowOnboarding(true);
+    } catch (error) {
+      console.error('Error resetting journey:', error);
+      toast.error('Failed to reset journey');
     }
   };
 
   return (
-    <>
+    <ProtectedRoute>
       <Header />
       <main className="pt-[85px] min-h-screen bg-[#f8fafc]">
-        {!profile ? (
+        {loading ? (
+          <div className="flex items-center justify-center py-40">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0d98ba]" />
+          </div>
+        ) : !profile ? (
           // Hero Section for new users
           <div className="px-4 md:px-10 lg:px-40 py-20">
             <div className="max-w-4xl mx-auto text-center">
@@ -191,7 +184,7 @@ export default function PlanJourney() {
                 Plan Your Study Abroad Journey
               </h1>
               <p className="text-xl text-[#4c809a] mb-8 leading-relaxed">
-                Get a personalized step-by-step guide with checklists, deadlines, and document tracking. 
+                Get a personalized step-by-step guide with checklists, deadlines, and document tracking.
                 Everything you need to successfully apply and prepare for studying abroad.
               </p>
 
@@ -248,7 +241,7 @@ export default function PlanJourney() {
               <div className="flex items-center justify-between mb-8">
                 <div>
                   <h1 className="text-4xl font-bold text-[#0d171b] mb-2">
-                    Welcome back, {profile.name}! 
+                    Welcome back, {profile.name}!
                   </h1>
                   <p className="text-lg text-[#4c809a]">
                     Planning to study {profile.studyLevel} in {profile.targetCountry}
@@ -318,12 +311,12 @@ export default function PlanJourney() {
       <Footer />
 
       {/* Onboarding Modal */}
-      <OnboardingModal 
-        isOpen={showOnboarding} 
-        onComplete={handleOnboardingComplete} 
-        onCancel={handleOnboardingCancel} 
+      <OnboardingModal
+        isOpen={showOnboarding}
+        onComplete={handleOnboardingComplete}
+        onCancel={handleOnboardingCancel}
         initialName={profile?.name || userDisplayName}
       />
-    </>
+    </ProtectedRoute>
   );
 }

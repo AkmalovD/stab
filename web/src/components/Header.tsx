@@ -32,7 +32,7 @@ const Header: React.FC = () => {
     { href: '/community', label: 'Community' },
   ];
 
-  if (loading || !user) {
+  if (loading) {
     return null;
   }
 

@@ -4,32 +4,88 @@ import { useAuth } from '@/auth/AuthContext';
 import Footer from '@/components/Footer';
 import Header from '@/components/Header';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import { userProfileApi } from '@/services/userProfileApi';
 import { Book, Calendar, DollarSign, GraduationCap, LogOut, Mail, MapPin, Pencil, Save, Target, User } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 export default function Profile() {
   const { user, logout } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [profileData, setProfileData] = useState({
-    displayName: user?.user_metadata?.full_name || user?.user_metadata?.name || 'Student Name',
-    email: user?.email || '',
-    dateOfBirth: '1998-05-15',
-    location: 'Tashkent, Uzbekistan',
-    university: 'National University of Uzbekistan',
-    major: 'Computer Science',
-    studyDestination: 'United Kingdom',
-    targetUniversity: 'University of Cambridge',
-    budget: '$25,000 - $35,000',
-    startDate: 'September 2024',
-    bio: 'Aspiring computer scientist passionate about AI and machine learning. Looking to pursue a Master\'s degree abroad.',
+    displayName: '',
+    email: '',
+    dateOfBirth: '',
+    location: '',
+    university: '',
+    major: '',
+    studyDestination: '',
+    targetUniversity: '',
+    budget: '',
+    startDate: '',
+    bio: '',
   });
+
+  useEffect(() => {
+    if (!user) return;
+    let active = true;
+
+    const load = async () => {
+      try {
+        const profile = await userProfileApi.get();
+        if (!active) return;
+        setProfileData({
+          displayName: profile.displayName || user?.user_metadata?.full_name || user?.user_metadata?.name || '',
+          email: profile.email || user?.email || '',
+          dateOfBirth: profile.dateOfBirth || '',
+          location: profile.location || '',
+          university: profile.university || '',
+          major: profile.major || '',
+          studyDestination: profile.studyDestination || '',
+          targetUniversity: profile.targetUniversity || '',
+          budget: profile.budget || '',
+          startDate: profile.startDate || '',
+          bio: profile.bio || '',
+        });
+      } catch (error) {
+        console.error('Failed to load profile:', error);
+      }
+    };
+
+    load();
+    return () => {
+      active = false;
+    };
+  }, [user]);
 
   const handleInputChange = (field: string, value: string) => {
     setProfileData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSave = () => {
-    setIsEditing(false);
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await userProfileApi.update({
+        displayName: profileData.displayName,
+        dateOfBirth: profileData.dateOfBirth,
+        location: profileData.location,
+        university: profileData.university,
+        major: profileData.major,
+        studyDestination: profileData.studyDestination,
+        targetUniversity: profileData.targetUniversity,
+        budget: profileData.budget,
+        startDate: profileData.startDate,
+        bio: profileData.bio,
+      });
+      toast.success('Profile saved');
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Failed to save profile:', error);
+      toast.error('Failed to save profile');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleLogOut = async () => {
@@ -69,12 +125,13 @@ export default function Profile() {
             </div>
             <button
               onClick={() => isEditing ? handleSave() : setIsEditing(true)}
-              className="flex items-center gap-2 cursor-pointer justify-center rounded-xl h-12 px-6 bg-[#0d98ba] text-white text-base font-bold shadow-lg hover:shadow-xl hover:bg-[#0b889f] transition-all"
+              disabled={saving}
+              className="flex items-center gap-2 cursor-pointer justify-center rounded-xl h-12 px-6 bg-[#0d98ba] text-white text-base font-bold shadow-lg hover:shadow-xl hover:bg-[#0b889f] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isEditing ? (
                 <>
                   <Save className="w-5 h-5" />
-                  <span>Save Changes</span>
+                  <span>{saving ? 'Saving...' : 'Save Changes'}</span>
                 </>
               ) : (
                 <>
@@ -166,7 +223,7 @@ export default function Profile() {
                         className="w-full px-4 py-3 rounded-xl text-[#0d171b] focus:outline-0 focus:ring-2 focus:ring-[#0d98ba] focus:ring-offset-2 border-2 border-gray-200 bg-white focus:border-[#0d98ba] text-base font-medium transition-all hover:border-gray-300"
                       />
                     ) : (
-                      <p className="text-[#0d171b] font-medium py-3">{new Date(profileData.dateOfBirth).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                      <p className="text-[#0d171b] font-medium py-3">{profileData.dateOfBirth ? new Date(profileData.dateOfBirth).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '—'}</p>
                     )}
                   </div>
                   

@@ -1,5 +1,4 @@
-const STORAGE_KEY = 'journeyProfilesMock';
-const LAST_ID_KEY = 'journeyProfilesMockLastId';
+import { api } from '@/lib/api';
 
 export interface JourneyProfileData {
     id?: number;
@@ -10,83 +9,95 @@ export interface JourneyProfileData {
     updated_at?: string;
 }
 
-const isBrowser = typeof window !== 'undefined';
+export interface JourneyTaskData {
+    id: string;
+    title: string;
+    description: string;
+    completed: boolean;
+    priority: string;
+    category: string;
+}
 
-const readProfiles = (): JourneyProfileData[] => {
-    if (!isBrowser) return [];
+export interface JourneyPhaseData {
+    id: string;
+    number: number;
+    title: string;
+    description: string;
+    timeframe: string;
+    status: string;
+    icon: string;
+    tasks: JourneyTaskData[];
+}
 
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-
-    try {
-        return JSON.parse(raw) as JourneyProfileData[];
-    } catch {
-        return [];
-    }
-};
-
-const writeProfiles = (profiles: JourneyProfileData[]) => {
-    if (!isBrowser) return;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(profiles));
-};
-
-const getNextId = (): number => {
-    if (!isBrowser) return 1;
-
-    const lastId = Number(localStorage.getItem(LAST_ID_KEY) || '0');
-    const nextId = lastId + 1;
-    localStorage.setItem(LAST_ID_KEY, String(nextId));
-    return nextId;
-};
+export interface JourneyDocumentData {
+    id: string;
+    name: string;
+    category: string;
+    status: string;
+    required: boolean;
+    expiryDate?: string;
+}
 
 export const journeyProfileApi = {
-    create: async(data: JourneyProfileData) => {
-        const now = new Date().toISOString();
-        const profile: JourneyProfileData = {
-            ...data,
-            id: getNextId(),
-            created_at: now,
-            updated_at: now,
+    create: async (data: JourneyProfileData) => {
+        const body = {
+            full_name: data.full_name,
+            destination_country: data.destination_country,
+            intended_start_date: data.intended_start_date,
         };
-
-        const profiles = readProfiles();
-        profiles.push(profile);
-        writeProfiles(profiles);
-        return profile;
+        const response = await api.post<JourneyProfileData>('/journey-profiles', body);
+        return response.data;
     },
 
     getAll: async () => {
-        return readProfiles();
+        const response = await api.get<JourneyProfileData[]>('/journey-profiles');
+        return response.data;
     },
 
-    getById: async(id: number) => {
-        const profile = readProfiles().find((item) => item.id === id);
-        if (!profile) {
-            throw new Error('Profile not found');
-        }
-        return profile;
+    getById: async (id: number) => {
+        const response = await api.get<JourneyProfileData>(`/journey-profiles/${id}`);
+        return response.data;
     },
 
-    update: async(id: number, data: JourneyProfileData) => {
-        const profiles = readProfiles();
-        const index = profiles.findIndex((item) => item.id === id);
-        if (index === -1) {
-            throw new Error('Profile not found');
-        }
-
-        const updatedProfile: JourneyProfileData = {
-            ...profiles[index],
-            ...data,
-            id,
-            updated_at: new Date().toISOString(),
+    update: async (id: number, data: JourneyProfileData) => {
+        const body = {
+            full_name: data.full_name,
+            destination_country: data.destination_country,
+            intended_start_date: data.intended_start_date,
         };
-        profiles[index] = updatedProfile;
-        writeProfiles(profiles);
-        return updatedProfile;
+        const response = await api.put<JourneyProfileData>(`/journey-profiles/${id}`, body);
+        return response.data;
     },
 
-    delete: async(id: number) => {
-        const profiles = readProfiles().filter((item) => item.id !== id);
-        writeProfiles(profiles);
-    }
-}
+    delete: async (id: number) => {
+        await api.delete(`/journey-profiles/${id}`);
+    },
+};
+
+export const journeyApi = {
+    getPhases: async (id: number) => {
+        const response = await api.get<JourneyPhaseData[]>(`/journey-profiles/${id}/phases`);
+        return response.data;
+    },
+
+    toggleTask: async (id: number, taskId: string, completed: boolean) => {
+        const response = await api.patch<JourneyPhaseData[]>(
+            `/journey-profiles/${id}/tasks/${taskId}`,
+            { completed }
+        );
+        return response.data;
+    },
+
+    getDocuments: async (id: number) => {
+        const response = await api.get<JourneyDocumentData[]>(`/journey-profiles/${id}/documents`);
+        return response.data;
+    },
+
+    updateDocument: async (id: number, documentId: string, status: string) => {
+        const response = await api.patch<JourneyDocumentData>(
+            `/journey-profiles/${id}/documents/${documentId}`,
+            { status }
+        );
+        return response.data;
+    },
+};
